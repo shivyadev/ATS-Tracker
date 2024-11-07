@@ -27,7 +27,7 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem
+    --radius: 0.5rem;
   }
   .dark {
     --background: 240 10% 3.9%;
@@ -53,7 +53,7 @@
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%
+    --chart-5: 340 75% 55%;
   }
 }
 @layer base {
@@ -63,4 +63,22 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.circular-progress-container {
+  position: relative; /* Needed for absolute positioning of the pseudo-element */
+  display: inline-block; /* Ensure the container fits around the circular progress bar */
+}
+
+.circular-progress-container::before {
+  content: ""; /* Create a pseudo-element */
+  position: absolute; /* Position it absolutely within the container */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%; /* Make it circular */
+  background: conic-gradient(red, blue, green); /* Set gradient colors */
+  padding: 8px; /* Set padding to create a border effect */
+  z-index: -1; /* Place it behind the circular progress bar */
 }

@@ -19,13 +19,13 @@ class ResumeRequest(BaseModel):
 class ResumeResponse(BaseModel):
     final_score: float
     skill_match_score: float
-    text_similarity_score: float
+    search_ability_score: float 
     experience_score: float
     education_score: float
     matched_skills: Dict[str, List[str]]
     missing_skills: Dict[str, List[str]]
     experience: Dict[str, int]
-    education: Dict[str, Union[str, List[str]]]
+    education: Dict[str, Union[str, List[str]]] 
 
 class ResumeScorer:
     def __init__(self):
@@ -43,8 +43,8 @@ class ResumeScorer:
         self.skill_categories = {
             'programming_languages': {
                 'keywords': [
-                    'python', 'java', 'javascript', 'c++', 'c', 'c#', 'ruby', 'php', 'swift', 'kotlin',
-                    'typescript', 'r', 'matlab', 'scala', 'perl', 'go', 'rust', 'objective-c', 'vb.net',
+                    'python', 'java', 'javascript', 'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin',
+                    'typescript', 'matlab', 'scala', 'perl', 'go', 'rust', 'objective-c', 'vb.net',
                     'lua', 'haskell', 'dart', 'bash', 'shell', 'groovy', 'julia', 'fortran'
                 ],
                 'weight': 0.20
@@ -135,71 +135,83 @@ class ResumeScorer:
         return processed_text
 
     def extract_skills(self, text: str) -> Dict[str, List[str]]:
-        """Extract skills from text based on predefined categories"""
+        """Extract skills from text based on predefined categories, matching complete words without removing valid skills."""
         text = text.lower()
         found_skills = defaultdict(list)
         
         for category, data in self.skill_categories.items():
             for skill in data['keywords']:
-                if skill in text:
+                # Use a regex to match the skill as a complete word
+                pattern = r'\b{}\b'.format(skill)
+                if re.search(pattern, text):
                     found_skills[category].append(skill)
+        
+        # Remove duplicates
+        for category, skills in found_skills.items():
+            found_skills[category] = list(set(skills))
         
         return found_skills
 
-    def calculate_skill_match_score(self, 
-                                  resume_skills: Dict[str, List[str]], 
-                                  jd_skills: Dict[str, List[str]]) -> float:
-        """Calculate skill match score between resume and job description"""
-        total_score = 0
-        max_score = 0
-        
-        for category, data in self.skill_categories.items():
-            weight = data['weight']
-            jd_category_skills = set(jd_skills.get(category, []))
-            resume_category_skills = set(resume_skills.get(category, []))
-            
-            if jd_category_skills:
-                max_score += weight
-                if resume_category_skills:
-                    match_ratio = len(resume_category_skills.intersection(jd_category_skills)) / len(jd_category_skills)
-                    total_score += weight * match_ratio
-        
-        return (total_score / max_score) * 100 if max_score > 0 else 0
-    
-    def calculate_text_similarity(self, resume_text: str, jd_text: str) -> float:
-        """Calculate text similarity using TF-IDF and cosine similarity"""
-        # Preprocess texts
-        processed_resume = self.preprocess_text(resume_text)
-        processed_jd = self.preprocess_text(jd_text)
-        
-        # Calculate TF-IDF vectors
-        tfidf_matrix = self.tfidf.fit_transform([processed_jd, processed_resume])
-        
-        # Calculate cosine similarity
-        similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-        
-        return similarity * 100
+    def calculate_skill_match_score(self, resume_skills: Dict[str, List[str]], jd_skills: Dict[str, List[str]]) -> float:
+        """Calculate the skill match score between resume and job description"""
+        total_jd_skills = sum(len(skills) for skills in jd_skills.values())
+        matched_skills = 0
 
+        for category, jd_skill_list in jd_skills.items():
+            resume_skill_list = resume_skills.get(category, [])
+            matched_skills += len(set(jd_skill_list) & set(resume_skill_list))
+
+        return (matched_skills / total_jd_skills) * 100
+    
+    def calculate_search_ability_score(self, resume_text: str) -> Tuple[float, Dict[str, List[str]]]:
+        """Calculate search ability score based on contact details in the resume"""
+        
+        # Search for email addresses
+        email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+        emails = re.findall(email_pattern, resume_text)
+        email_score = 100 if emails else 0
+
+        # Search for phone numbers
+        phone_pattern = r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b'
+        phones = re.findall(phone_pattern, resume_text)
+        phone_score = 100 if phones else 0
+
+        # Search for social media handles (LinkedIn, Twitter, GitHub, etc.)
+        social_media_pattern = r'(?:https?://)?(?:www\.)?(linkedin|twitter|github|stackoverflow|medium|dev\.to)[^\s]*'
+        social_media_handles = re.findall(social_media_pattern, resume_text, re.IGNORECASE)
+        social_media_score = 100 if social_media_handles else 0
+
+        capitalized_handles = [h.capitalize() for h in social_media_handles]
+
+        # Calculate the overall search ability score
+        search_ability_score = (email_score + phone_score + social_media_score) / 3
+
+        # Return the overall score and the contact details
+        return search_ability_score, {
+            'emails': emails,
+            'phones': phones,
+            'social_media_handles': capitalized_handles
+        }
+    
     def extract_education(self, text: str) -> Dict[str, Union[str, List[str]]]:
-        """Extract education information from text"""
+        """Extract education information from text."""
         text = text.lower()
         education_info = {
             'highest_level': None,
             'fields': []
         }
-        
-        # Extract education level
+
+        # Extract highest education level
         for level in self.education_levels.keys():
-            if level in text:
-                if education_info['highest_level'] is None or \
-                   self.education_levels[level] > self.education_levels[education_info['highest_level']]:
-                    education_info['highest_level'] = level
-        
+            if re.search(r'\b' + re.escape(level) + r'\b', text):
+                education_info['highest_level'] = level
+                break  # Stop once the highest level is found
+
         # Extract fields of study
         for field in self.education_fields:
-            if field in text:
+            if re.search(r'\b' + re.escape(field.lower()) + r'\b', text):
                 education_info['fields'].append(field)
-        
+
         return education_info
 
     def extract_experience(self, text: str) -> int:
@@ -216,30 +228,34 @@ class ResumeScorer:
         return 0
 
     def calculate_education_score(self, 
-                                resume_education: Dict[str, Union[str, List[str]]], 
-                                jd_education: Dict[str, Union[str, List[str]]]) -> float:
-        """Calculate education match score"""
+                                  resume_education: Dict[str, Union[str, List[str]]], 
+                                  jd_education: Dict[str, Union[str, List[str]]]) -> float:
+        """Calculate education match score."""
         score = 0
-        
+
         # Score for education level
-        if jd_education['highest_level'] and resume_education['highest_level']:
-            resume_level_weight = self.education_levels[resume_education['highest_level']]
-            required_level_weight = self.education_levels[jd_education['highest_level']]
-            level_score = min(100, (resume_level_weight / required_level_weight) * 100) \
-                         if required_level_weight > 0 else 100
+        resume_level = resume_education.get('highest_level')
+        jd_level = jd_education.get('highest_level')
+        
+        if jd_level and resume_level:
+            resume_weight = self.education_levels[resume_level]
+            jd_weight = self.education_levels[jd_level]
+            level_score = min(100, (resume_weight / jd_weight) * 100) if jd_weight > 0 else 100
             score += level_score * 0.6  # Education level is 60% of education score
         
         # Score for field match
-        if jd_education['fields'] and resume_education['fields']:
-            field_matches = set(resume_education['fields']).intersection(set(jd_education['fields']))
-            field_score = (len(field_matches) / len(jd_education['fields'])) * 100 \
-                         if jd_education['fields'] else 100
+        resume_fields = set(resume_education.get('fields', []))
+        jd_fields = set(jd_education.get('fields', []))
+        
+        if jd_fields and resume_fields:
+            field_matches = resume_fields.intersection(jd_fields)
+            field_score = (len(field_matches) / len(jd_fields)) * 100 if jd_fields else 100
             score += field_score * 0.4  # Field match is 40% of education score
         
-        return score
+        return round(score, 2)
 
     def score_resume(self, resume_text: str, job_description: str) -> Dict:
-        """Score resume against job description"""
+        """Score resume against job description with verified skill matches"""
         # Extract skills
         resume_skills = self.extract_skills(resume_text)
         jd_skills = self.extract_skills(job_description)
@@ -250,7 +266,7 @@ class ResumeScorer:
         
         # Calculate various scores
         skill_match_score = self.calculate_skill_match_score(resume_skills, jd_skills)
-        text_similarity_score = self.calculate_text_similarity(resume_text, job_description)
+        search_ability_score, search_ability_details = self.calculate_search_ability_score(resume_text)
         education_score = self.calculate_education_score(resume_education, jd_education)
         
         # Extract experience
@@ -259,28 +275,38 @@ class ResumeScorer:
         
         # Calculate experience score
         experience_score = min(100, (resume_experience / max(1, required_experience)) * 100) \
-                         if required_experience > 0 else 100
+                        if required_experience > 0 else 100
         
         # Calculate weighted final score
         final_score = (
-            skill_match_score * 0.35 +
-            text_similarity_score * 0.25 +
-            experience_score * 0.20 +
-            education_score * 0.20
+            skill_match_score * 0.4 +
+            search_ability_score * 0.2 +
+            experience_score * 0.2 +
+            education_score * 0.2
         )
+
+        # Identify missing skills specific to job description
+        # Calculate skills present in both job description and resume
+        matched_skills = {
+            category: list(set(jd_skills.get(category, [])) & set(resume_skills.get(category, [])))
+            for category in jd_skills
+        }
+        
+        missing_skills = {
+            category: list(set(jd_skills.get(category, [])) - set(matched_skills.get(category, [])))
+            for category in jd_skills
+        }
         
         # Prepare detailed report
         return {
             'final_score': round(final_score, 2),
             'skill_match_score': round(skill_match_score, 2),
-            'text_similarity_score': round(text_similarity_score, 2),
+            'search_ability_score': round(search_ability_score, 2),
+            'search_ability_details': search_ability_details,
             'experience_score': round(experience_score, 2),
             'education_score': round(education_score, 2),
-            'matched_skills': dict(resume_skills),
-            'missing_skills': {
-                category: list(set(jd_skills.get(category, [])) - set(resume_skills.get(category, [])))
-                for category in self.skill_categories.keys()
-            },
+            'matched_skills': matched_skills,
+            'missing_skills': missing_skills,
             'experience': {
                 'resume_experience': resume_experience,
                 'required_experience': required_experience
@@ -290,6 +316,7 @@ class ResumeScorer:
                 'required_education': jd_education
             }
         }
+
     
     @staticmethod
     def parse_cli_args():
@@ -309,32 +336,6 @@ class ResumeScorer:
             
         except json.JSONDecodeError:
             raise ValueError("Invalid JSON input")
-
-# Keep existing methods (preprocess_text, extract_skills, calculate_skill_match_score, 
-# calculate_text_similarity, extract_experience) as they are...
-
-# Create FastAPI app
-app = FastAPI()
-
-# Initialize scorer
-scorer = ResumeScorer()
-
-@app.post("/api/score-resume")
-async def score_resume(request: ResumeRequest) -> ResumeResponse:
-    try:
-        result = scorer.score_resume(request.resume_text, request.job_description)
-        return ResumeResponse(**result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# For Next.js API route
-async def handle_resume_scoring(resume_text: str, job_description: str) -> Dict:
-    try:
-        scorer = ResumeScorer()
-        result = scorer.score_resume(resume_text, job_description)
-        return {"status": "success", "data": result}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
     
 
 if __name__ == "__main__":
@@ -353,53 +354,3 @@ if __name__ == "__main__":
         print(json.dumps({"error": str(e)}))
         sys.exit(1)
 
-
-# import json
-
-# def test_resume_scoring():
-#     sample_resume_text = """
-#         John Doe is a software engineer with 5 years of experience in Python, Java, and SQL.
-#         He has worked on full-stack projects, primarily using Django and React.
-#         Holds a Bachelor's degree in Computer Science from a reputed university.
-#     """
-    
-#     sample_job_description = """
-#         We are looking for a software engineer proficient in Python, Java, and SQL.
-#         The candidate should have experience with full-stack development, especially in Django and React.
-#         A Bachelor's degree in Computer Science or related field is required.
-#     """
-    
-#     # Initialize scorer and run scoring function
-#     scorer = ResumeScorer()
-#     result = scorer.score_resume(sample_resume_text, sample_job_description)
-    
-#     # Organize and print results for better readability
-#     print("\n=== Test Resume Scoring Result ===\n")
-    
-#     print(f"Final Score: {result['final_score']}%")
-#     print(f"Skill Match Score: {result['skill_match_score']}%")
-#     print(f"Text Similarity Score: {result['text_similarity_score']}%")
-#     print(f"Experience Score: {result['experience_score']}%")
-#     print(f"Education Score: {result['education_score']}%\n")
-
-#     print("Matched Skills by Category:")
-#     for category, skills in result['matched_skills'].items():
-#         print(f"  - {category.capitalize()}: {', '.join(skills) if skills else 'None'}")
-
-#     print("\nMissing Skills by Category:")
-#     for category, skills in result['missing_skills'].items():
-#         print(f"  - {category.capitalize()}: {', '.join(skills) if skills else 'None'}")
-    
-#     print("\nExperience Details:")
-#     print(f"  - Resume Experience: {result['experience']['resume_experience']} years")
-#     print(f"  - Required Experience: {result['experience']['required_experience']} years")
-
-#     print("\nEducation Details:")
-#     print(f"  - Resume Education Level: {result['education']['resume_education']['highest_level']}")
-#     print(f"  - Required Education Level: {result['education']['required_education']['highest_level']}")
-#     print(f"  - Matched Fields of Study: {', '.join(result['education']['resume_education']['fields'])}")
-#     print(f"  - Required Fields of Study: {', '.join(result['education']['required_education']['fields'])}")
-
-# # Run test function only if script is run directly
-# if __name__ == "__main__":
-#     test_resume_scoring()

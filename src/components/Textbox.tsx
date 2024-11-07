@@ -12,11 +12,11 @@ const Textbox = () => {
   const router = useRouter();
 
   const uploadDescription = async () => {
-    const response = await axios.post("/api/resume/upload/description", {
+    const { data } = await axios.post("/api/resume/upload/description", {
       desc,
     });
-    if (response) {
-      router.push("/resume/analysis");
+    if (data) {
+      router.push(`/resume/analysis/${data.fileName}`);
     }
   };
 

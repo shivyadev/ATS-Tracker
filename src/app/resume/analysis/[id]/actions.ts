@@ -1,21 +1,21 @@
 import axios from "axios";
 import pdfToText from "react-pdftotext";
 
-export const getFileUrl = async () => {
-  const { data } = await axios.get("/api/resume/latest");
-  const { fileName } = data;
+export const getFileUrl = async (id: string) => {
+  const { data } = await axios.get(`/api/resume/${id}`);
+  const { fileName, description } = data;
   const fileUrl = process.env.NEXT_PUBLIC_AWS_FILE_URL + fileName;
 
   if (!fileUrl) {
     throw new Error("Invalid file URL");
   }
 
-  return fileUrl;
+  return { fileUrl, description };
 };
 
-export const resumeScoring = async () => {
+export const resumeScoring = async (id: string) => {
   try {
-    const { data: pdfData } = await axios.get("/api/resume/latest");
+    const { data: pdfData } = await axios.get(`/api/resume/${id}`);
     const { fileName, description } = pdfData;
     const fileUrl = process.env.NEXT_PUBLIC_AWS_FILE_URL + fileName;
 
@@ -26,6 +26,7 @@ export const resumeScoring = async () => {
     const pdfText = await pdfToText(pdfBlob);
 
     const { data } = await axios.post("/api/resume/scoring", {
+      fileName: id,
       resumeText: pdfText,
       jobDescription: description,
     });

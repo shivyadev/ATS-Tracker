@@ -1,8 +1,9 @@
 import scoreResume from "@/lib/pythonBridge";
+import ResumeModel from "@/models/ResumeSchema";
 
 export async function POST(req: Request) {
   try {
-    const { resumeText, jobDescription } = await req.json();
+    const { fileName, resumeText, jobDescription } = await req.json();
 
     if (!resumeText || !jobDescription) {
       return new Response(
@@ -15,6 +16,15 @@ export async function POST(req: Request) {
 
     const result = await scoreResume(resumeText, jobDescription);
     console.log(result);
+
+    const updatedResume = await ResumeModel.findOneAndUpdate(
+      { fileName: fileName },
+      { $set: { atsScore: Math.ceil(result?.final_score) } },
+      { new: true, upsert: true } // Return the updated document, and create a new document if it doesn't exist
+    );
+
+    console.log(updatedResume);
+
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { "Content-Type": "application/json" },

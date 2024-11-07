@@ -3,8 +3,10 @@
 import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSmoothScroll } from "../hooks/useSmoothScroll";
 
 export default function Home() {
+  const scrollToSection = useSmoothScroll();
   return (
     <>
       <section className="flex items-center justify-center px-2 py-32 bg-white md:px-0 min-h-screen">
@@ -32,12 +34,12 @@ export default function Home() {
                     Let's Track It
                     <ArrowRight className="ml-1 size-5" />
                   </Link>
-                  <a
-                    href="#_"
-                    className="flex items-center px-6 py-3 text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200 hover:text-gray-600"
+                  <span
+                    onClick={() => scrollToSection("features")}
+                    className="flex items-center px-6 py-3 text-gray-500 bg-gray-100 rounded-md hover:bg-gray-200 hover:text-gray-600 hover:cursor-pointer"
                   >
                     Learn More
-                  </a>
+                  </span>
                 </div>
               </div>
             </div>
