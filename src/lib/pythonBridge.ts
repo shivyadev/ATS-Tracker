@@ -9,6 +9,7 @@ interface ResumeScore {
   education_score: number;
   matched_skills: Record<string, string[]>;
   missing_skills: Record<string, string[]>;
+  all_resume_skills: Record<string, string[]>;
   experience: {
     resume_experience: number;
     required_experience: number;

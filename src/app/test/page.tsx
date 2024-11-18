@@ -2,7 +2,7 @@
 import axios from "axios";
 
 import { useEffect, useState } from "react";
-import { getFileUrl } from "../resume/analysis/actions";
+import { getFileUrl } from "../resume/analysis/[id]/actions";
 import pdfToText from "react-pdftotext";
 
 export default function Test() {

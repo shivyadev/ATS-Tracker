@@ -222,7 +222,7 @@ export default function Home() {
           </div>
         </div>
       </section>{" "}
-      <section id="contact-us" className="bg-gray-900">
+      {/* <section id="contact-us" className="bg-gray-900">
         <div className="container px-6 py-12 mx-auto">
           <div className="text-center">
             <p className="font-medium text-blue-500 text-blue-400">
@@ -236,7 +236,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-12 mt-10 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-12 mt-20 md:grid-cols-2 lg:grid-cols-3">
             <div className="flex flex-col items-center justify-center text-center">
               <span className="size-10 text-blue-500 rounded-full bg-gray-800">
                 <Image
@@ -248,7 +248,14 @@ export default function Home() {
                 />
               </span>
               <h2 className="mt-4 text-lg font-medium text-white">Gmail </h2>
-              {/* <p className="mt-2 text-blue-500 text-blue-400">{contact}</p> */}
+              <div className="mt-4 flex flex-col gap-2">
+                <Link href="#" className="text-white">
+                  uddeshyabarod@gmail.com
+                </Link>
+                <Link href="#" className="text-white">
+                  tanishqueverma29@gmail.com
+                </Link>
+              </div>
             </div>
             <div className="flex flex-col items-center justify-center text-center">
               <span className="size-10 text-blue-500 rounded-full bg-gray-800">
@@ -261,7 +268,20 @@ export default function Home() {
                 />
               </span>
               <h2 className="mt-4 text-lg font-medium text-white">LinkedIn </h2>
-              {/* <p className="mt-2 text-blue-500 text-blue-400">{contact}</p> */}
+              <div className="mt-4 flex flex-col gap-2">
+                <Link
+                  href="https://www.linkedin.com/in/tanishq-verma-07011321a?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"
+                  className="text-white hover:text-blue-400"
+                >
+                  Tanishq Verma
+                </Link>
+                <Link
+                  href="https://www.linkedin.com/in/shivansh-yadav-a8171b27b/"
+                  className="text-white hover:text-blue-400"
+                >
+                  Shivansh Yadav
+                </Link>
+              </div>
             </div>
 
             <div className="flex flex-col items-center justify-center text-center">
@@ -277,11 +297,21 @@ export default function Home() {
               <h2 className="mt-4 text-lg font-medium text-white">
                 Instagram{" "}
               </h2>
-              {/* <p className="mt-2 text-blue-500 text-blue-400">{contact}</p> */}
+              <div className="mt-4 flex flex-col gap-2">
+                <Link
+                  href="https://www.instagram.com/__tanishq__verma?igsh=MTZmdGk5c3dsNDRicg=="
+                  className="text-white hover:text-blue-400"
+                >
+                  @_tanishq_verma
+                </Link>
+                <Link href="" className="text-white hover:text-blue-400">
+                  @Uddeshya_Barod
+                </Link>
+              </div>
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
     </>
   );
 }

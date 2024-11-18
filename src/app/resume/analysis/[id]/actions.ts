@@ -36,3 +36,19 @@ export const resumeScoring = async (id: string) => {
     console.error("Error extracting PDF text:", error);
   }
 };
+
+export const getJobDetails = async (resumeSkills: Record<string, string[]>) => {
+  let combinedSkills = "";
+
+  Object.keys(resumeSkills).map((key, idx) => {
+    resumeSkills[key].map((skill, _) => {
+      combinedSkills += skill + " ";
+    });
+  });
+
+  const { data } = await axios.post("/api/jobs/search-by-keywords", {
+    skills: combinedSkills,
+  });
+
+  return { data: data.jobs, skills: combinedSkills };
+};

@@ -18,7 +18,7 @@ function Navbar() {
             className="flex items-center mb-5 font-medium text-gray-900 lg:w-auto lg:items-center lg:justify-center md:mb-0"
           >
             <span className="mx-auto text-xl font-black leading-none text-gray-900 select-none">
-              ATS-Tracker<span className="text-indigo-600">.</span>
+              Recruit-Radar<span className="text-indigo-600">.</span>
             </span>
           </Link>
           <nav className="flex flex-wrap items-center mb-5 text-base md:mb-0 md:pl-8 md:ml-8 md:border-l md:border-gray-200">
@@ -40,6 +40,12 @@ function Navbar() {
             >
               Contact Us
             </span>
+            <Link
+              href="/search"
+              className="mr-5 font-medium leading-6 text-gray-600 hover:text-gray-900 hover:cursor-pointer"
+            >
+              Jobs
+            </Link>
           </nav>
         </div>
 

@@ -6,17 +6,30 @@ import StyledButton from "./StyledButton";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { jobDescriptions } from "@/lib/descriptions";
+import { useToast } from "@/hooks/use-toast";
 
 const Textbox = () => {
   const [desc, setDesc] = useState<string>("");
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const router = useRouter();
+  const { toast } = useToast();
 
   const uploadDescription = async () => {
-    const { data } = await axios.post("/api/resume/upload/description", {
-      desc,
-    });
-    if (data) {
-      router.push(`/resume/analysis/${data.fileName}`);
+    if (desc.length !== 0) {
+      const { data } = await axios.post("/api/resume/upload/description", {
+        desc,
+      });
+      if (data) {
+        router.push(`/resume/analysis/${data.fileName}`);
+      }
+    } else {
+      toast({
+        title: "Missing description",
+        description:
+          "Provide the job description to continue the analysis process",
+        variant: "destructive",
+      });
+      console.log("missing description");
     }
   };
 
@@ -37,8 +50,13 @@ const Textbox = () => {
             {jobDescriptions.map((job, index) => (
               <li
                 key={index}
-                onClick={() => setDesc(job.text)}
-                className=" text-center cursor-pointer text-zinc-400 hover:text-zinc-800 mb-2"
+                onClick={() => {
+                  setSelectedIndex(index);
+                  setDesc(job.text); // Set description when clicked
+                }}
+                className={`text-center cursor-pointer mb-2 text-zinc-400 hover:text-zinc-800 ${
+                  selectedIndex === index ? "text-zinc-800 font-semibold" : ""
+                }`}
               >
                 {job.title}
               </li>

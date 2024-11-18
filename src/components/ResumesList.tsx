@@ -29,7 +29,7 @@ const LatestResumesList = ({ resumes }: Props) => {
         {latestResumes.map((resume, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-4 border shadow-md rounded-xl cursor-pointer hover:bg-gray-100"
+            className="flex items-center justify-between p-4 border shadow-md rounded-xl cursor-pointer hover:bg-gray-100 bg-gray-200"
             onClick={() => handleClick(resume.fileName)}
           >
             {/* ATS Score Circle */}
