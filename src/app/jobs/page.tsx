@@ -2,8 +2,8 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { getJobDetails } from "./actions";
-import { useQuery } from "@tanstack/react-query";
+import { getJobDetails, saveJobDetails } from "./actions";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Loader } from "lucide-react";
 import {
   Card,
@@ -22,6 +22,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { toast } from "@/hooks/use-toast";
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -37,6 +38,40 @@ export default function Page() {
     refetchOnMount: true,
   });
 
+  const useSaveJobDetailsMutation = () => {
+    return useMutation({
+      mutationKey: ["save-job-details"],
+      mutationFn: (job: {
+        company: string;
+        title: string;
+        location: string;
+        description: string;
+        redirectUrl: string;
+      }) => saveJobDetails(job),
+    });
+  };
+
+  const { mutate } = useMutation({
+    mutationKey: ["save-job-details"],
+    mutationFn: (job: {
+      company: string;
+      title: string;
+      location: string;
+      description: string;
+      redirectUrl: string;
+    }) => saveJobDetails(job),
+    onSuccess: (_, variables) => {
+      // Open the redirect URL in a new tab if the job is successfully saved
+      if (variables?.redirectUrl) {
+        window.open(variables.redirectUrl, "_blank");
+      }
+    },
+    onError: (error) => {
+      console.error("Failed to save job:", error);
+      // Optional: display an error message to the user
+    },
+  });
+
   const [currentPage, setCurrentPage] = useState(1);
   const jobsPerPage = 12; // Number of jobs per page
 
@@ -50,6 +85,23 @@ export default function Page() {
 
   // Change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+  const handleClick = (job) => {
+    if (job) {
+      mutate({
+        company: job.company?.display_name,
+        title: job.title,
+        location: job.location?.display_name,
+        description: job.description,
+        redirectUrl: job.redirect_url,
+      });
+    } else {
+      toast({
+        title: "Missing job details",
+        description: "Unable to save data",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen flex justify-center items-center">
@@ -77,10 +129,7 @@ export default function Page() {
                   <p className="text-sm line-clamp-6">{job?.description}</p>
                 </CardContent>
                 <CardFooter>
-                  <Button
-                    className="w-full"
-                    onClick={() => window.open(job?.redirect_url, "_blank")}
-                  >
+                  <Button className="w-full" onClick={() => handleClick(job)}>
                     Apply Now
                   </Button>
                 </CardFooter>

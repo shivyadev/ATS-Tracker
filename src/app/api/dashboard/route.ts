@@ -1,4 +1,5 @@
 import { dbConnect } from "@/lib/db";
+import JobsModel from "@/models/JobSchema";
 import ResumeModel from "@/models/ResumeSchema";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -20,12 +21,17 @@ export async function GET(req: Request) {
       { fileName: 1, atsScore: 1, submittedAt: 1, description: 1 }
     );
 
-    console.log(resumes);
+    const jobs = await JobsModel.find({ userId: user.id })
+      .sort({ submittedAt: -1 })
+      .exec();
+
+    console.log("Jobs:", jobs);
 
     return new Response(
       JSON.stringify({
         resumes,
         userName: user.firstName,
+        jobs,
       }),
       {
         status: 200,

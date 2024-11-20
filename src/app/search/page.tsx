@@ -26,7 +26,7 @@ export default function Page() {
   return (
     <div className="w-screen min-h-screen flex justify-center items-center">
       <main className="flex-grow">
-        <section className="bg-gray-50 py-12 sm:py-16 lg:py-20">
+        <section className="py-12 sm:py-16 lg:py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
               Find Your Dream Job

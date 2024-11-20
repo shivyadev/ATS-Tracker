@@ -45,7 +45,7 @@ class ResumeScorer:
                 'keywords': [
                     'python', 'java', 'javascript', 'c++', 'c#', 'ruby', 'php', 'swift', 'kotlin',
                     'typescript', 'matlab', 'scala', 'perl', 'go', 'rust', 'objective-c', 'vb.net',
-                    'lua', 'haskell', 'dart', 'bash', 'shell', 'groovy', 'julia', 'fortran'
+                    'lua', 'haskell', 'dart', 'bash', 'shell', 'groovy', 'julia', 'fortran', '.net', 'sql'
                 ],
                 'weight': 0.20
             },
@@ -53,7 +53,7 @@ class ResumeScorer:
                 'keywords': [
                     'react', 'angular', 'vue', 'django', 'flask', 'spring', 'express', 'laravel', 'rails', 
                     'asp.net', 'svelte', 'ember', 'backbone', 'meteor', 'nestjs', 'next.js', 'nuxt.js', 
-                    'ionic', 'bootstrap', 'foundation', 'tailwind', 'bulma'
+                    'ionic', 'bootstrap', 'foundation', 'tailwind', 'bulma', 'aws'
                 ],
                 'weight': 0.15
             },
@@ -95,6 +95,7 @@ class ResumeScorer:
                 'weight': 0.10
             }
         }
+
 
         # Define education levels and their weights
         self.education_levels = {

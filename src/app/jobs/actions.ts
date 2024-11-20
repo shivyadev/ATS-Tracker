@@ -12,3 +12,30 @@ export const getJobDetails = async (title: string) => {
     throw err; // Optionally rethrow or return a custom error message
   }
 };
+
+interface JobDetails {
+  company: string;
+  title: string;
+  location: string;
+  description: string;
+  redirectUrl: string;
+}
+
+export const saveJobDetails = async (jobDetails: JobDetails) => {
+  try {
+    const { company, title, location, description, redirectUrl } = jobDetails;
+
+    const { data } = await axios.post("/api/jobs/save", {
+      company,
+      title,
+      location,
+      description,
+      redirectUrl,
+    });
+
+    if (data) return "Success";
+    else throw new Error("Error occurred");
+  } catch (err) {
+    console.error(err);
+  }
+};

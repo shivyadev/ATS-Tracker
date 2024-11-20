@@ -1,4 +1,7 @@
+"use client";
+
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button"; // Assuming Button is imported from your UI library
 
 interface ResumeData {
   atsScore: number;
@@ -14,8 +17,8 @@ interface Props {
 const LatestResumesList = ({ resumes }: Props) => {
   const router = useRouter();
 
-  // Handle redirect on click
-  const handleClick = (fileName: string) => {
+  // Handle redirect on button click
+  const handleRedirect = (fileName: string) => {
     router.push(`/resume/analysis/${fileName}`); // Redirect to the resume detail page
   };
 
@@ -23,28 +26,34 @@ const LatestResumesList = ({ resumes }: Props) => {
   const latestResumes = [...resumes].slice(-5).reverse();
 
   return (
-    <div className="my-10">
-      <h2 className="text-xl font-semibold mb-4">Latest Resume Scores</h2>
+    <div className="mt-10">
       <div className="space-y-4">
         {latestResumes.map((resume, index) => (
           <div
             key={index}
-            className="flex items-center justify-between p-4 border shadow-md rounded-xl cursor-pointer hover:bg-gray-100 bg-gray-200"
-            onClick={() => handleClick(resume.fileName)}
+            className="flex items-center justify-between p-4 border shadow-md rounded-xl bg-gray-50"
           >
-            {/* ATS Score Circle */}
             <div className="flex items-center justify-center w-12 h-12 rounded-full bg-blue-500 text-white">
               <span>{resume.atsScore}</span>
             </div>
-            {/* Resume Data */}
+
             <div className="ml-4 flex-1">
               <div className="text-sm text-gray-600">
-                <span className="font-semibold">Submitted: </span>{" "}
+                <span className="font-semibold">Submitted: </span>
                 {new Date(resume.submittedAt).toLocaleString()}
               </div>
-              <div className="mt-1 text-sm text-gray-600 line-clamp-1 ">
+              <div className="mt-1 text-sm text-gray-600 line-clamp-1">
                 {resume?.description}
               </div>
+            </div>
+
+            <div className="ml-4">
+              <Button
+                className="w-full sm:w-auto"
+                onClick={() => handleRedirect(resume.fileName)}
+              >
+                View Analysis
+              </Button>
             </div>
           </div>
         ))}
