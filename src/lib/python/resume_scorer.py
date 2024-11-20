@@ -53,7 +53,7 @@ class ResumeScorer:
                 'keywords': [
                     'react', 'angular', 'vue', 'django', 'flask', 'spring', 'express', 'laravel', 'rails', 
                     'asp.net', 'svelte', 'ember', 'backbone', 'meteor', 'nestjs', 'next.js', 'nuxt.js', 
-                    'ionic', 'bootstrap', 'foundation', 'tailwind', 'bulma', 'aws'
+                    'ionic', 'bootstrap', 'foundation', 'tailwind', 'bulma', 'aws', 'tensorflow', 'pytorch'
                 ],
                 'weight': 0.15
             },
@@ -61,7 +61,7 @@ class ResumeScorer:
                 'keywords': [
                     'sql', 'mongodb', 'postgresql', 'mysql', 'oracle', 'redis', 'cassandra', 'couchdb',
                     'dynamodb', 'mariadb', 'neo4j', 'elasticsearch', 'firebase', 'sqlite', 'teradata',
-                    'hbase', 'clickhouse', 'db2', 'hive', 'arangodb', 'influxdb', 'bigquery'
+                    'hbase', 'clickhouse', 'db2', 'hive', 'arangodb', 'influxdb', 'bigquery', 'data warehouse'
                 ],
                 'weight': 0.15
             },
@@ -70,7 +70,9 @@ class ResumeScorer:
                     'leadership', 'communication', 'teamwork', 'problem solving', 'analytical', 'critical thinking',
                     'adaptability', 'creativity', 'conflict resolution', 'time management', 'empathy', 'interpersonal skills',
                     'negotiation', 'decision making', 'resilience', 'work ethic', 'organization', 'public speaking',
-                    'emotional intelligence', 'collaboration', 'active listening', 'coaching'
+                    'emotional intelligence', 'collaboration', 'active listening', 'coaching', 'customer service',
+                    'client relationships', 'relationship building', 'business planning', 'strategic planning', 
+                    'business strategy', 'presentations', 'team building'
                 ],
                 'weight': 0.15
             },
@@ -79,7 +81,8 @@ class ResumeScorer:
                     'git', 'docker', 'kubernetes', 'jenkins', 'aws', 'azure', 'gcp', 'terraform', 'ansible', 'chef', 
                     'puppet', 'circleci', 'travisci', 'vagrant', 'splunk', 'datadog', 'newrelic', 'sonarqube', 
                     'jira', 'confluence', 'slack', 'bitbucket', 'gitlab', 'octopus deploy', 'npm', 'yarn', 
-                    'postman', 'selenium', 'cypress', 'grafana', 'prometheus'
+                    'postman', 'selenium', 'cypress', 'grafana', 'prometheus', 'tableau', 'power bi', 'salesforce', 
+                    'excel', 'word', 'outlook', 'photoshop', 'illustrator', 'indesign', 'microsoft office'
                 ],
                 'weight': 0.15
             },
@@ -90,11 +93,13 @@ class ResumeScorer:
                     'ccna', 'mcse', 'azure fundamentals', 'aws solutions architect', 'aws developer', 
                     'aws sysops', 'gcp associate', 'oracle certified', 'ibm certified', 'red hat certified', 
                     'salesforce certified', 'kubernetes certified', 'data science certification', 
-                    'machine learning certification', 'blockchain certification', 'cloud certification'
+                    'machine learning certification', 'blockchain certification', 'cloud certification', 
+                    'CFA', 'CPA', 'PMP', 'CISM', 'CGEIT', 'CRISC'
                 ],
                 'weight': 0.10
             }
         }
+
 
 
         # Define education levels and their weights
