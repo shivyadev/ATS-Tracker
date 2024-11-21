@@ -1,12 +1,7 @@
-import spacy
-import pandas as pd
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+
 from collections import defaultdict
 import re
-from typing import Dict, List, Tuple, Optional, Union
-from fastapi import FastAPI, HTTPException
+from typing import Dict, List, Tuple,Union
 from pydantic import BaseModel
 import sys
 import json
@@ -29,15 +24,6 @@ class ResumeResponse(BaseModel):
 
 class ResumeScorer:
     def __init__(self):
-        # Load spaCy model for NER and text processing
-        self.nlp = spacy.load("en_core_web_sm")
-        
-        # Initialize TF-IDF vectorizer
-        self.tfidf = TfidfVectorizer(
-            stop_words='english',
-            ngram_range=(1, 2),
-            max_features=10000
-        )
         
         # Define skill categories and their respective keywords
         self.skill_categories = {
@@ -122,24 +108,6 @@ class ResumeScorer:
             'applied mathematics', 'physics', 'cognitive science', 'data engineering', 'cloud computing'
         ]
 
-    def preprocess_text(self, text: str) -> str:
-        """Clean and preprocess text"""
-        # Convert to lowercase
-        text = text.lower()
-        
-        # Remove special characters and extra whitespace
-        text = re.sub(r'[^\w\s]', ' ', text)
-        text = re.sub(r'\s+', ' ', text)
-        
-        # Process with spaCy
-        doc = self.nlp(text)
-        
-        # Lemmatize and remove stopwords
-        processed_text = ' '.join([token.lemma_ for token in doc 
-                                 if not token.is_stop and not token.is_punct])
-        
-        return processed_text
-
     def extract_skills(self, text: str) -> Dict[str, List[str]]:
         """Extract skills from text based on predefined categories"""
         text = text.lower()
@@ -169,6 +137,7 @@ class ResumeScorer:
 
         return (matched_skills / total_jd_skills) * 100
     
+
     def calculate_search_ability_score(self, resume_text: str) -> Tuple[float, Dict[str, List[str]]]:
         """Calculate search ability score based on contact details in the resume"""
         email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
@@ -179,10 +148,17 @@ class ResumeScorer:
         phones = re.findall(phone_pattern, resume_text)
         social_media_handles = re.findall(social_media_pattern, resume_text, re.IGNORECASE)
         
+        # Handle multiple emails/phones: take the first one if available
+        first_email = emails[0] if emails else None
+        first_phone = phones[0] if phones else None
+        
+        # Remove duplicates in social media handles and count only unique platforms
+        unique_social_media_handles = set(h.lower() for h in social_media_handles)
+        
         # Calculate individual scores
-        email_score = 100 if emails else 0
-        phone_score = 100 if phones else 0
-        social_media_score = min(100, len(social_media_handles) * 33.33)  # 33.33 points per platform
+        email_score = 100 if first_email else 0
+        phone_score = 100 if first_phone else 0
+        social_media_score = min(100, len(unique_social_media_handles) * 33.33)  # 33.33 points per platform
         
         # Check if all three are present, if so, set score to 100
         if email_score == 100 and phone_score == 100 and social_media_score > 0:
@@ -192,40 +168,12 @@ class ResumeScorer:
             search_ability_score = (email_score + phone_score + social_media_score) / 3
         
         return search_ability_score, {
-            'emails': emails,
-            'phones': phones,
-            'social_media_handles': [h.capitalize() for h in social_media_handles]
+            'email': first_email,
+            'phone': first_phone,
+            'social_media_handles': [h.capitalize() for h in unique_social_media_handles]
         }
 
 
-    def extract_education(self, text: str) -> Dict[str, Union[str, List[str]]]:
-        """Extract education information from text"""
-        text = text.lower()
-        education_info = {
-            'highest_level': None,
-            'fields': []
-        }
-        
-        # Extract highest education level
-        found_levels = []
-        for level in self.education_levels.keys():
-            if re.search(r'\b' + re.escape(level) + r'\b', text):
-                found_levels.append(level)
-        
-        if found_levels:
-            # Get the highest level based on weights
-            education_info['highest_level'] = max(
-                found_levels,
-                key=lambda x: self.education_levels[x]
-            )
-        
-        # Extract fields of study
-        education_info['fields'] = [
-            field for field in self.education_fields
-            if re.search(r'\b' + re.escape(field.lower()) + r'\b', text)
-        ]
-        
-        return education_info
 
     def extract_experience(self, text: str, job_text: str = "") -> dict:
         """
@@ -236,15 +184,18 @@ class ResumeScorer:
         job_text = job_text.lower()
         total_days = 0
 
-        # Check if neither resume nor job description mentions experience
+        # Experience keywords
         experience_keywords = ["years", "months", "days", "experience"]
+
+        # Case when neither resume nor job description mentions experience
         if not any(keyword in text for keyword in experience_keywords) and not any(keyword in job_text for keyword in experience_keywords):
+            # If neither mentions experience, assign a neutral score
             return {
                 "total_days": 0,
                 "formatted_experience": "No experience mentioned",
-                "experience_score": 100
+                "experience_score": 50  # Neutral score since no experience is mentioned in either
             }
-        
+
         # Patterns for extracting experience
         year_patterns = [
             r'(\d+)\+?\s*years?\s*(?:of)?\s*experience',
@@ -312,7 +263,7 @@ class ResumeScorer:
                 score = 25 + ((years - 0.25) * 33.33)
             else:
                 score = (years / 0.25) * 25
-                
+            
             return round(score, 1)
         
         def format_experience(days):
@@ -334,6 +285,17 @@ class ResumeScorer:
             
             return " and ".join(parts)
         
+        # If job description doesn't specify experience but resume does
+        if not any(keyword in job_text for keyword in experience_keywords):
+            experience_score = calculate_score(total_days)
+            formatted_experience = format_experience(total_days)
+            return {
+                "total_days": total_days,
+                "formatted_experience": formatted_experience,
+                "experience_score": experience_score
+            }
+
+        # Calculate score for extracted experience
         experience_score = calculate_score(total_days)
         
         return {
@@ -343,44 +305,6 @@ class ResumeScorer:
         }
 
 
-    def calculate_education_score(self, 
-                                resume_education: Dict[str, Union[str, List[str]]], 
-                                jd_education: Dict[str, Union[str, List[str]]]) -> float:
-        """Calculate education match score"""
-        if not jd_education.get('highest_level') and not jd_education.get('fields'):
-            # If no education requirements specified, base score on resume education level
-            resume_level = resume_education.get('highest_level')
-            if resume_level:
-                return self.education_levels[resume_level] * 100
-            return 50  # Default score when no education info available
-            
-        score = 0
-        total_weight = 0
-        
-        # Score for education level
-        if jd_education.get('highest_level'):
-            total_weight += 0.6
-            resume_level = resume_education.get('highest_level')
-            jd_level = jd_education['highest_level']
-            
-            if resume_level:
-                resume_weight = self.education_levels[resume_level]
-                jd_weight = self.education_levels[jd_level]
-                level_score = min(100, (resume_weight / jd_weight) * 100) if jd_weight > 0 else 100
-                score += level_score * 0.6
-        
-        # Score for field match
-        if jd_education.get('fields'):
-            total_weight += 0.4
-            resume_fields = set(resume_education.get('fields', []))
-            jd_fields = set(jd_education['fields'])
-            
-            if resume_fields:
-                field_matches = resume_fields.intersection(jd_fields)
-                field_score = (len(field_matches) / len(jd_fields)) * 100 if jd_fields else 100
-                score += field_score * 0.4
-        
-        return round(score / total_weight if total_weight > 0 else 50, 2)
 
     def score_resume(self, resume_text: str, job_description: str) -> Dict:
         """Score resume against job description"""
@@ -393,46 +317,43 @@ class ResumeScorer:
         # Extract information
         resume_skills = self.extract_skills(resume_text)
         jd_skills = self.extract_skills(job_description)
-        resume_education = self.extract_education(resume_text)
-        jd_education = self.extract_education(job_description)
         
-        # Extract experience with source types
+        # Extract experience
         resume_exp = self.extract_experience(resume_text)
         required_exp = self.extract_experience(job_description)
         
         # Calculate scores
         skill_match_score = self.calculate_skill_match_score(resume_skills, jd_skills)
         search_ability_score, search_ability_details = self.calculate_search_ability_score(resume_text)
-        education_score = self.calculate_education_score(resume_education, jd_education)
         
         # Calculate experience score
         if required_exp['total_days'] == 0 and resume_exp['total_days'] == 0:
-            experience_score = 100  # Set experience score to 100 if both have no experience defined
+            experience_score = 50  # Set experience score to 50 if both have no experience defined (neutral score)
         elif required_exp['total_days'] > 0:
+            # If the job description requires experience, calculate based on the ratio of resume experience
             experience_score = min(100, (resume_exp['total_days'] / required_exp['total_days']) * 100)
         else:
+            # If the job description does not require experience, use the resume's experience score directly
             experience_score = resume_exp['experience_score']
-        
-        # Calculate weighted final score
+
+        # Adjust weights (removing education weight)
         weights = {
-            'skill_match': 0.4,
-            'search_ability': 0.2,
-            'experience': 0.2,
-            'education': 0.2
+            'skill_match': 0.5,
+            'search_ability': 0.25,
+            'experience': 0.25
         }
         
         # Adjust weights based on available information
         if not jd_skills:
-            weights['skill_match'] = 0.2
-            weights['search_ability'] += 0.1
+            weights['skill_match'] = 0.3
+            weights['search_ability'] += 0.2
             weights['experience'] += 0.1
         
-        # Calculate weighted final score
+        # Calculate weighted final score (without education)
         final_score = (
             skill_match_score * weights['skill_match'] +
             search_ability_score * weights['search_ability'] +
-            experience_score * weights['experience'] +
-            education_score * weights['education']
+            experience_score * weights['experience']
         )
 
         # Identify matched and missing skills
@@ -450,17 +371,16 @@ class ResumeScorer:
         matched_skills = {k: v for k, v in matched_skills.items() if v}
         missing_skills = {k: v for k, v in missing_skills.items() if v}
         
-        # Prepare detailed report
+        # Prepare detailed report (removed education-related fields)
         return {
             'final_score': round(final_score, 2),
             'skill_match_score': round(skill_match_score, 2),
             'search_ability_score': round(search_ability_score, 2),
             'search_ability_details': search_ability_details,
             'experience_score': round(experience_score, 2),
-            'education_score': round(education_score, 2),
             'matched_skills': matched_skills,
             'missing_skills': missing_skills,
-            'all_resume_skills': resume_skills,  # Added all resume skills here
+            'all_resume_skills': resume_skills,
             'experience': {
                 'resume': {
                     'total_days': resume_exp['total_days'],
@@ -472,10 +392,6 @@ class ResumeScorer:
                     'formatted_experience': required_exp['formatted_experience'],
                     'experience_score': required_exp['experience_score']
                 }
-            },
-            'education': {
-                'resume_education': resume_education,
-                'required_education': jd_education
             }
         }
 

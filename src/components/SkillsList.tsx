@@ -53,7 +53,7 @@ export default function SkillsList({
   let message = "";
 
   if (totalSkills === 0) {
-    message = "No skills required for this category in the job description.";
+    message = "No skills specified";
   } else if (missingSkillsCount === 0) {
     value = 100;
     message = "All required skills matched!";

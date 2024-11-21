@@ -30,6 +30,9 @@ import { Button } from "@/components/ui/button";
 import JobDescription from "@/components/JobDescription";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
+import { saveJobDetails } from "@/app/jobs/actions";
+import { toast } from "@/hooks/use-toast";
 
 interface Props {
   atsScore?: number;
@@ -70,6 +73,45 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
     refetchOnWindowFocus: true, // Refetch data on window focus
     refetchOnMount: true,
   });
+
+  const { mutate } = useMutation({
+    mutationKey: ["save-job-details-2"],
+    mutationFn: (job: {
+      company: string;
+      title: string;
+      location: string;
+      description: string;
+      redirectUrl: string;
+    }) => saveJobDetails(job),
+    onSuccess: (_, variables) => {
+      // Open the redirect URL in a new tab if the job is successfully saved
+      if (variables?.redirectUrl) {
+        window.open(variables.redirectUrl, "_blank");
+      }
+    },
+    onError: (error) => {
+      console.error("Failed to save job:", error);
+      // Optional: display an error message to the user
+    },
+  });
+
+  const handleClick = (job) => {
+    if (job) {
+      mutate({
+        company: job.company?.display_name,
+        title: job.title,
+        location: job.location?.display_name,
+        description: job.description,
+        redirectUrl: job.redirect_url,
+      });
+    } else {
+      toast({
+        title: "Missing job details",
+        description: "Unable to save data",
+        variant: "destructive",
+      });
+    }
+  };
 
   const [openSkill, setOpenSkill] = useState<boolean>(false);
   const [openSA, setOpenSA] = useState<boolean>(false);
@@ -112,7 +154,7 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
     : false;
 
   return (
-    <div className="mt-16">
+    <div className="mt-16 overflow-x-hidden">
       {isLoading || isUploading || isFetching ? (
         <div className="min-h-screen flex col-span-2 w-full flex-col items-center justify-center gap-4">
           <Loader className="h-10 w-10 animate-spin text-blue-500" />
@@ -136,7 +178,7 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
                     <div className="flex flex-col col-span-1 col-start-1 text-left">
                       <div className="text-xl">Searchability</div>
                       <span className="mt-2">
-                        {searchAbilityResult ? (
+                        {result?.search_ability_score === 100 ? (
                           <div className="flex items-center gap-2">
                             <Check className="size-3 bg-green-500 text-white rounded-full" />
                             <p className="text-xs text-green-500">Completed</p>
@@ -235,10 +277,17 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
                     <div className="flex flex-col col-span-1 col-start-1 text-left">
                       <div className="text-xl">Experience</div>
                       <span className="mt-2">
-                        {result?.experience_score ? (
+                        {result?.experience_score === 100 ? (
                           <div className="flex items-center gap-2">
                             <Check className="size-3 bg-green-500 text-white rounded-full" />
                             <p className="text-xs text-green-500">Completed</p>
+                          </div>
+                        ) : result?.experience_score > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <Check className="size-3 bg-blue-500 text-white rounded-full" />
+                            <p className="text-xs text-blue-500 whitespace-nowrap">
+                              Incomplete
+                            </p>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2">
@@ -328,10 +377,7 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
                     <p className="text-sm line-clamp-4">{job?.description}</p>
                   </CardContent>
                   <CardFooter>
-                    <Button
-                      className="w-full"
-                      onClick={() => window.open(job?.redirect_url, "_blank")}
-                    >
+                    <Button className="w-full" onClick={() => handleClick(job)}>
                       Apply Now
                     </Button>
                   </CardFooter>

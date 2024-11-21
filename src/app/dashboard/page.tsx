@@ -41,6 +41,7 @@ export default function Dashboard() {
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: true, // Refetch data on window focus
     refetchOnMount: true,
+    retryOnMount: true,
   });
 
   const [uploaded, setUploaded] = useState<boolean>(false);
@@ -116,7 +117,7 @@ export default function Dashboard() {
       </section>
       <Separator className="mt-24 border-[1px] border-gray-300 mb-20" />
       <section>
-        <h2 className="text-2xl font-semibold">Previous Visited Jobs</h2>
+        <h2 className="text-2xl font-semibold">Previously Visited Jobs</h2>
         <p className="mt-2 mb-2 font-light">
           Check out the jobs you've explored and see how they match your skills!{" "}
         </p>
