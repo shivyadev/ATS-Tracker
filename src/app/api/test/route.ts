@@ -1,4 +1,5 @@
 import { dbConnect } from "@/lib/db";
+import JobsModel from "@/models/JobSchema";
 import ResumeModel from "@/models/ResumeSchema";
 
 export async function GET(request: Request): Promise<Response> {
@@ -6,6 +7,7 @@ export async function GET(request: Request): Promise<Response> {
     await dbConnect();
 
     await ResumeModel.deleteMany({});
+    await JobsModel.deleteMany({});
 
     return new Response("DB connected", { status: 200 });
   } catch (err) {

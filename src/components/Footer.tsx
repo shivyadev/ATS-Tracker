@@ -92,9 +92,12 @@ export default function Footer() {
                   className="mx-auto"
                 />
               </span>
-              <p className="text-gray-400 hover:text-gray-200 duration-150">
+              <Link
+                href="https://www.instagram.com/uddeshya.barod/?igsh=MTJkc2Zxa3c1N2U2NQ%3D%3D"
+                className="text-gray-400 hover:text-gray-200 duration-150"
+              >
                 Uddeshya Barod
-              </p>
+              </Link>
             </div>
           </div>
         </div>

@@ -2,13 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getDashboardDetails } from "./action";
-import { Loader, Search } from "lucide-react";
+import { Loader } from "lucide-react";
 import Graph from "@/components/Graph";
 import StatsDisplay from "@/components/StatsDisplay";
 import { Separator } from "@/components/ui/separator";
 import Dropbox from "@/components/Dropbox";
 import Textbox from "@/components/Textbox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LatestResumesList from "@/components/ResumesList";
 import { randomUUID } from "crypto";
 import { Input } from "@/components/ui/input";
@@ -16,11 +16,13 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import LatestJobsList from "@/components/JobsList";
+import { useUser } from "@clerk/nextjs";
 
 export default function Dashboard() {
   const [title, setTitle] = useState<string>("");
   const { toast } = useToast();
   const router = useRouter();
+  const user = useUser();
 
   const handleClick = () => {
     if (title === "") {
@@ -35,13 +37,11 @@ export default function Dashboard() {
   };
 
   const { data: record, isLoading } = useQuery({
-    queryKey: ["get-user-data", randomUUID],
+    queryKey: ["get-user-data", user.user?.id],
     queryFn: getDashboardDetails,
     retry: 2,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: true, // Refetch data on window focus
-    refetchOnMount: true,
-    retryOnMount: true,
+    staleTime: 0, // Always fetch fresh data
+    refetchOnWindowFocus: false, // Avoid duplicate fetch on window focus
   });
 
   const [uploaded, setUploaded] = useState<boolean>(false);

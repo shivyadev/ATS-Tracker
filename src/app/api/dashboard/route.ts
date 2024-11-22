@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     return new Response(
       JSON.stringify({
         resumes,
-        userName: user.firstName,
+        userName: user.username,
         jobs,
       }),
       {
