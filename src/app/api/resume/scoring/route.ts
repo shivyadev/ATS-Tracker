@@ -1,5 +1,5 @@
-import scoreResume from "@/lib/pythonBridge";
 import ResumeModel from "@/models/ResumeSchema";
+import axios from "axios";
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +14,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const result = await scoreResume(resumeText, jobDescription);
+    const { data: result } = await axios.post(
+      `${process.env.FLASK_SERVER}/api/score_resume`,
+      {
+        resume_text: resumeText,
+        job_description: jobDescription,
+      }
+    );
     console.log(result);
 
     const updatedResume = await ResumeModel.findOneAndUpdate(

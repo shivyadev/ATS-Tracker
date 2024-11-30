@@ -3,9 +3,6 @@ from collections import defaultdict
 import re
 from typing import Dict, List, Tuple,Union
 from pydantic import BaseModel
-import sys
-import json
-
 
 class ResumeRequest(BaseModel):
     resume_text: str
@@ -394,42 +391,3 @@ class ResumeScorer:
                 }
             }
         }
-
-    @staticmethod
-    def parse_cli_args():
-        """Parse command line arguments passed from Node.js"""
-        if len(sys.argv) < 2:
-            raise ValueError("No input arguments provided")
-            
-        try:
-            input_data = json.loads(sys.argv[1])
-            resume_text = input_data.get('resume_text')
-            job_description = input_data.get('job_description')
-            
-            if not resume_text:
-                raise ValueError("Missing resume text")
-                
-            # Allow empty job description - will use default
-            job_description = job_description or "Any experience and skills"
-                
-            return resume_text, job_description
-            
-        except json.JSONDecodeError:
-            raise ValueError("Invalid JSON input")
-    
-
-if __name__ == "__main__":
-    try:
-        # Parse command line arguments
-        resume_text, job_description = ResumeScorer.parse_cli_args()
-        
-        # Create scorer instance and process
-        scorer = ResumeScorer()
-        result = scorer.score_resume(resume_text, job_description)
-        
-        # Print result as JSON
-        print(json.dumps(result))
-        
-    except Exception as e:
-        print(json.dumps({"error": str(e)}))
-        sys.exit(1)
