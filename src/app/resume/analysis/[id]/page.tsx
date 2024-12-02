@@ -1,45 +1,52 @@
 "use client";
 
+import { saveJobDetails } from "@/app/jobs/actions";
+import DisplayScore from "@/components/DisplayScore";
+import Experience from "@/components/Experience";
+import JobDescription from "@/components/JobDescription";
+import PdfViewer from "@/components/PDFViewer";
+import Searchability from "@/components/Searchability";
+import Skills from "@/components/Skills";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle, ChevronDown, Loader, Check, X } from "lucide-react";
-import { getFileUrl, getJobDetails, resumeScoring } from "./actions";
-import PdfViewer from "@/components/PDFViewer";
-import { useQuery } from "@tanstack/react-query";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
-import Skills from "@/components/Skills";
-import Experience from "@/components/Experience";
-import DisplayScore from "@/components/DisplayScore";
-import { cn } from "@/lib/utils";
-import Searchability from "@/components/Searchability";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import JobDescription from "@/components/JobDescription";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { useMutation } from "@tanstack/react-query";
-import { saveJobDetails } from "@/app/jobs/actions";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AlertCircle, Check, ChevronDown, Loader, X } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { Key, useState } from "react";
+import { getFileUrl, getJobDetails, resumeScoring } from "./actions";
 
-interface Props {
-  atsScore?: number;
+interface Job {
+  company?: {
+    display_name?: string;
+  };
+  title?: string;
+  location?: {
+    display_name?: string;
+  };
+  description?: string;
+  redirect_url?: string;
 }
 
-const ATSResumeLayout = ({ atsScore }: Props) => {
-  const { id } = useParams();
+const ATSResumeLayout = () => {
+  const { id }: { id: string } = useParams();
   const {
     data: record,
     isLoading,
@@ -95,14 +102,14 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
     },
   });
 
-  const handleClick = (job) => {
+  const handleClick = (job: Job | null | undefined) => {
     if (job) {
       mutate({
-        company: job.company?.display_name,
-        title: job.title,
-        location: job.location?.display_name,
-        description: job.description,
-        redirectUrl: job.redirect_url,
+        company: job.company?.display_name ?? "Unknown Company",
+        title: job.title ?? "Unknown Title",
+        location: job.location?.display_name ?? "Unknown Location",
+        description: job.description ?? "No Description",
+        redirectUrl: job.redirect_url ?? "https://example.com",
       });
     } else {
       toast({
@@ -146,12 +153,6 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
 
     return <PdfViewer fileUrl={record.fileUrl} />;
   };
-
-  const searchAbilityResult = result?.search_ability_details
-    ? result?.search_ability_details["emails"]?.length > 0 &&
-      result?.search_ability_details["phones"]?.length > 0 &&
-      result?.search_ability_details["social_media_handles"]?.length > 0
-    : false;
 
   return (
     <div className="mt-16 overflow-x-hidden">
@@ -364,25 +365,32 @@ const ATSResumeLayout = ({ atsScore }: Props) => {
               Here are some job opportunities that match your resume
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {jobDetails?.data?.map((job, key) => (
-                <Card key={key} className="flex flex-col">
-                  <CardHeader>
-                    <CardTitle>{job?.company?.display_name}</CardTitle>
-                    <h3 className="text-lg font-semibold mt-2">{job?.title}</h3>
-                  </CardHeader>
-                  <CardContent className="flex-grow">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {job?.location?.display_name}
-                    </p>
-                    <p className="text-sm line-clamp-4">{job?.description}</p>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full" onClick={() => handleClick(job)}>
-                      Apply Now
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+              {jobDetails?.data?.map(
+                (job: Job, key: Key | null | undefined) => (
+                  <Card key={key} className="flex flex-col">
+                    <CardHeader>
+                      <CardTitle>{job?.company?.display_name}</CardTitle>
+                      <h3 className="text-lg font-semibold mt-2">
+                        {job?.title}
+                      </h3>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {job?.location?.display_name}
+                      </p>
+                      <p className="text-sm line-clamp-4">{job?.description}</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        className="w-full"
+                        onClick={() => handleClick(job)}
+                      >
+                        Apply Now
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                )
+              )}
             </div>
             <div className="my-10 w-full flex justify-center items-center">
               <Link

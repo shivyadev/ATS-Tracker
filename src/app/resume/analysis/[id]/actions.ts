@@ -40,7 +40,9 @@ export const resumeScoring = async (id: string) => {
 export const getJobDetails = async (resumeSkills: Record<string, string[]>) => {
   let combinedSkills = "";
 
-  Object.keys(resumeSkills).map((key, idx) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  Object.keys(resumeSkills).map((key, _idx) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     resumeSkills[key].map((skill, _) => {
       combinedSkills += skill + " ";
     });

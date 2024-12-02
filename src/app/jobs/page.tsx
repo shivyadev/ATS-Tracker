@@ -1,32 +1,43 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
-import { getJobDetails, saveJobDetails } from "./actions";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Loader } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
-  CardContent,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { toast } from "@/hooks/use-toast";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Loader } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Key, useState } from "react";
+import { getJobDetails, saveJobDetails } from "./actions";
+
+interface Job {
+  company?: {
+    display_name?: string;
+  };
+  title?: string;
+  location?: {
+    display_name?: string;
+  };
+  description?: string;
+  redirect_url?: string;
+}
 
 export default function Page() {
   const searchParams = useSearchParams();
-  const title = searchParams.get("title");
+  const title: string = searchParams.get("title") || "";
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["get-job-details", title],
@@ -37,19 +48,6 @@ export default function Page() {
     refetchOnWindowFocus: true, // Refetch data on window focus
     refetchOnMount: true,
   });
-
-  const useSaveJobDetailsMutation = () => {
-    return useMutation({
-      mutationKey: ["save-job-details"],
-      mutationFn: (job: {
-        company: string;
-        title: string;
-        location: string;
-        description: string;
-        redirectUrl: string;
-      }) => saveJobDetails(job),
-    });
-  };
 
   const { mutate } = useMutation({
     mutationKey: ["save-job-details"],
@@ -85,14 +83,14 @@ export default function Page() {
 
   // Change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-  const handleClick = (job) => {
+  const handleClick = (job: Job | null | undefined) => {
     if (job) {
       mutate({
-        company: job.company?.display_name,
-        title: job.title,
-        location: job.location?.display_name,
-        description: job.description,
-        redirectUrl: job.redirect_url,
+        company: job.company?.display_name ?? "Unknown Company",
+        title: job.title ?? "Unknown Title",
+        location: job.location?.display_name ?? "Unknown Location",
+        description: job.description ?? "No Description",
+        redirectUrl: job.redirect_url ?? "https://example.com",
       });
     } else {
       toast({
@@ -116,7 +114,7 @@ export default function Page() {
             Job search results for &quot;{title}&quot;
           </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {currentJobs?.map((job, key) => (
+            {currentJobs?.map((job: Job, key: Key | null | undefined) => (
               <Card key={key} className="flex flex-col">
                 <CardHeader>
                   <CardTitle>{job?.company?.display_name}</CardTitle>

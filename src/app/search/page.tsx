@@ -32,8 +32,8 @@ export default function Page() {
               Find Your Dream Job
             </h1>
             <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-              Enter the job title you're looking for and start your journey to a
-              better career.
+              Enter the job title you&apos;re looking for and start your journey
+              to a better career.
             </p>
             <div className="mt-8 sm:flex sm:justify-center">
               <Input

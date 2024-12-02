@@ -3,7 +3,7 @@ import JobsModel from "@/models/JobSchema";
 import ResumeModel from "@/models/ResumeSchema";
 import { currentUser } from "@clerk/nextjs/server";
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     await dbConnect();
 

@@ -102,7 +102,7 @@ export default function Dashboard() {
       <section>
         <h2 className="text-2xl font-semibold">Previous Scans</h2>
         <p className="mt-2 mb-2 font-light">
-          Check out the resumes you've analyzed and see how they stack up!
+          Check out the resumes you&apos;ve analyzed and see how they stack up!
         </p>
         {record["resumes"].length === 0 ? (
           <div className="p-10 py-20 text-center">
@@ -118,7 +118,8 @@ export default function Dashboard() {
       <section>
         <h2 className="text-2xl font-semibold">Previously Visited Jobs</h2>
         <p className="mt-2 mb-2 font-light">
-          Check out the jobs you've explored and see how they match your skills!{" "}
+          Check out the jobs you&apos;ve explored and see how they match your
+          skills!{" "}
         </p>
         {record["jobs"].length === 0 ? (
           <div className="p-10 py-20 text-center">

@@ -1,10 +1,18 @@
 import { cn } from "@/lib/utils";
 
-// interface Props {
-//   experience: Record<string, number>;
-// }
+interface ExperienceProps {
+  experience: {
+    required?: {
+      formatted_experience?: string;
+    };
+    resume?: {
+      formatted_experience?: string;
+    };
+    experience_score?: number;
+  };
+}
 
-export default function Experience({ experience }) {
+export default function Experience({ experience }: ExperienceProps) {
   return (
     <div className="mt-5 flex flex-col text-sm">
       <div className="p-2 pr-4 flex justify-between">

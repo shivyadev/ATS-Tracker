@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  RenderPageProps,
-  SpecialZoomLevel,
-  Viewer,
-  Worker,
-} from "@react-pdf-viewer/core";
+import { RenderPageProps, Viewer, Worker } from "@react-pdf-viewer/core";
 
 import { useEffect } from "react";
 
@@ -22,7 +17,7 @@ const CustomPageLayer: React.FC<{
     if (renderPageProps.canvasLayerRendered) {
       renderPageProps.markRendered(renderPageProps.pageIndex);
     }
-  }, [renderPageProps.canvasLayerRendered]);
+  }, [renderPageProps, renderPageProps.canvasLayerRendered]);
 
   return <>{renderPageProps.canvasLayer.children}</>;
 };

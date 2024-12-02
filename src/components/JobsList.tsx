@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import {
   Card,
   CardHeader,
@@ -23,8 +22,6 @@ interface Props {
 }
 
 const LatestJobsList = ({ jobs }: Props) => {
-  const router = useRouter();
-
   // Handle redirect to the job URL
   const handleRedirect = (redirectUrl: string) => {
     window.open(redirectUrl, "_blank");

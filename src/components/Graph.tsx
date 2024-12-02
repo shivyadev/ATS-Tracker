@@ -8,6 +8,7 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
+  ChartOptions,
 } from "chart.js";
 
 // Registering Chart.js components
@@ -33,7 +34,6 @@ interface Props {
 }
 
 const Graph = ({ resumeData }: Props) => {
-  // Prepare data for Chart.js
   const chartData = {
     labels: resumeData?.map((item) =>
       new Date(item.submittedAt).toLocaleDateString()
@@ -50,13 +50,12 @@ const Graph = ({ resumeData }: Props) => {
     ],
   };
 
-  // Chart options
-  const chartOptions = {
+  const chartOptions: ChartOptions<"line"> = {
     responsive: true,
-    maintainAspectRatio: false, // This allows the chart to fill the container
+    maintainAspectRatio: false,
     scales: {
       x: {
-        type: "category" as const,
+        type: "category",
         title: {
           display: true,
           text: "Submission Date",
@@ -67,7 +66,7 @@ const Graph = ({ resumeData }: Props) => {
         },
         grid: {
           display: true,
-          drawBorder: true,
+          color: "rgba(0, 0, 0, 0.1)", // Replace drawBorder with borderColor
         },
       },
       y: {
@@ -83,16 +82,16 @@ const Graph = ({ resumeData }: Props) => {
         },
         grid: {
           display: true,
-          drawBorder: true,
+          color: "rgba(0, 0, 0, 0.1)", // Replace drawBorder with borderColor
         },
       },
     },
     plugins: {
       legend: {
-        position: "top" as const,
+        position: "top",
       },
       tooltip: {
-        mode: "index" as const,
+        mode: "index",
         intersect: false,
       },
     },

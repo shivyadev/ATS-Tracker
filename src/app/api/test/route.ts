@@ -2,7 +2,7 @@ import { dbConnect } from "@/lib/db";
 import JobsModel from "@/models/JobSchema";
 import ResumeModel from "@/models/ResumeSchema";
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(): Promise<Response> {
   try {
     await dbConnect();
 
