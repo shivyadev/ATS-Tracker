@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     "ATS Tracker helps job seekers optimize resumes, score them against job descriptions, and improve their chances of getting noticed.",
 };
 
-axios.defaults.baseURL = process.env.NEXT_PUBLIC_URL;
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
 export default function RootLayout({
   children,
